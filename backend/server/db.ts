@@ -46,8 +46,13 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL,
-  timezone: '+00:00'
-});
+// Ensure we force UTC timezone for consistent date handling
+let connectionUrl = process.env.DATABASE_URL;
+// Append timezone=Z (UTC) if not already present
+if (!connectionUrl.includes("timezone=")) {
+  const separator = connectionUrl.includes("?") ? "&" : "?";
+  connectionUrl += `${separator}timezone=Z`;
+}
+
+const pool = mysql.createPool(connectionUrl);
 export const db = drizzle(pool, { schema, mode: "default" });
