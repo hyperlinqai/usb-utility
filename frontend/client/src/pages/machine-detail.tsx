@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { Lock, Unlock, Clock, ArrowLeft, ShieldAlert, Usb, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { formatToIST } from "@/lib/date-utils";
 
 export default function MachineDetailPage() {
   const [, params] = useRoute("/machines/:id");
@@ -31,15 +31,15 @@ export default function MachineDetailPage() {
   });
 
   const updatePolicy = useMutation({
-    mutationFn: (policy: { lockAllUsb: boolean; temporarilyUnlockedUntil?: string | null }) => 
+    mutationFn: (policy: { lockAllUsb: boolean; temporarilyUnlockedUntil?: string | null }) =>
       api.updatePolicy(id, policy),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['machine', id] });
       toast({ title: "Policy Updated", description: "New USB policy applied successfully." });
     },
     onError: () => {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Failed to update policy. Please try again.",
         variant: "destructive"
       });
@@ -86,10 +86,10 @@ export default function MachineDetailPage() {
               <div>
                 <div className="font-medium">Current Policy</div>
                 <div className="text-sm text-muted-foreground">
-                  {isTempUnlocked 
-                    ? `Unlocked until ${format(new Date(tempUnlock!), 'HH:mm')}` 
-                    : isLocked 
-                      ? "USB Ports Locked" 
+                  {isTempUnlocked
+                    ? `Unlocked until ${formatToIST(new Date(tempUnlock!))}`
+                    : isLocked
+                      ? "USB Ports Locked"
                       : "USB Ports Open"}
                 </div>
               </div>
@@ -106,28 +106,28 @@ export default function MachineDetailPage() {
                 <CardDescription>Manage USB access for this device</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  className="w-full justify-start" 
+                <Button
+                  className="w-full justify-start"
                   variant={isLocked ? "destructive" : "outline"}
                   onClick={() => updatePolicy.mutate({ lockAllUsb: true, temporarilyUnlockedUntil: null })}
                   disabled={isLocked && !isTempUnlocked}
                 >
                   <Lock className="mr-2 h-4 w-4" /> Lock All USB
                 </Button>
-                
-                <Button 
-                  className="w-full justify-start" 
+
+                <Button
+                  className="w-full justify-start"
                   variant={!isLocked ? "default" : "outline"}
                   onClick={() => updatePolicy.mutate({ lockAllUsb: false, temporarilyUnlockedUntil: null })}
                   disabled={!isLocked}
                 >
                   <Unlock className="mr-2 h-4 w-4" /> Unlock Permanently
                 </Button>
-                
+
                 <Separator className="my-2" />
-                
-                <Button 
-                  className="w-full justify-start" 
+
+                <Button
+                  className="w-full justify-start"
                   variant="secondary"
                   onClick={() => {
                     const unlockTime = new Date(Date.now() + 30 * 60000).toISOString();
@@ -150,7 +150,7 @@ export default function MachineDetailPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Last Sync</span>
-                  <span className="text-sm">{format(new Date(machine.lastSeenAt), 'HH:mm:ss')}</span>
+                  <span className="text-sm">{formatToIST(new Date(machine.lastSeenAt))}</span>
                 </div>
               </CardContent>
             </Card>
@@ -179,7 +179,7 @@ export default function MachineDetailPage() {
                     {logs?.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {format(new Date(log.createdAt), 'MMM dd HH:mm')}
+                          {formatToIST(new Date(log.createdAt))}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">

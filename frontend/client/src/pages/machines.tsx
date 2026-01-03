@@ -32,6 +32,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { formatToIST, formatRelativeTime } from "@/lib/date-utils";
 
 export default function MachinesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -428,9 +429,14 @@ export default function MachinesPage() {
                         </TableCell>
                         <TableCell>
                           {system.lastConnected ? (
-                            <span className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(system.lastConnected), { addSuffix: true })}
-                            </span>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">
+                                {formatToIST(system.lastConnected)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatRelativeTime(system.lastConnected)}
+                              </span>
+                            </div>
                           ) : (
                             <span className="text-sm text-muted-foreground">Never</span>
                           )}
